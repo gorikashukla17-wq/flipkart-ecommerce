@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShopKart</title>
+<style>
+  :root {
+    --brand: #2455d6; --brand-dark: #1a3f9e; --accent: #ffc220; --ok: #1f8a4c; --bad: #c62828;
+    --bg: #f1f3f6; --card: #fff; --text: #212121; --muted: #717478; --line: #e0e0e0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  button { font: inherit; cursor: pointer; }
+  header { background: var(--brand); color: #fff; position: sticky; top: 0; z-index: 10; }
+  .bar { max-width: 1200px; margin: 0 auto; display: flex; gap: 16px; align-items: center; padding: 10px 16px; }
+  .logo { font-weight: 800; font-size: 22px; font-style: italic; cursor: pointer; white-space: nowrap; }
+  .logo small { display: block; font-size: 11px; font-weight: 500; color: var(--accent); }
+  .search { flex: 1; display: flex; }
+  .search input { flex: 1; border: 0; padding: 10px 14px; border-radius: 2px 0 0 2px; font-size: 15px; }
+  .search button { border: 0; background: #fff; color: var(--brand); padding: 0 14px; border-radius: 0 2px 2px 0; }
+  .nav-btn { background: none; border: 0; color: #fff; font-weight: 600; padding: 8px 6px; white-space: nowrap; }
+  .nav-btn.login { background: #fff; color: var(--brand); padding: 6px 22px; border-radius: 2px; }
+  .badge { background: var(--accent); color: #000; border-radius: 10px; padding: 0 7px; font-size: 12px; margin-left: 4px; }
+  .cats { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .cats .bar { overflow-x: auto; gap: 6px; }
+  .cat { border: 0; background: none; padding: 6px 12px; border-radius: 16px; white-space: nowrap; }
+  .cat.active { background: #e8eefc; color: var(--brand); font-weight: 600; }
+  main { max-width: 1200px; margin: 16px auto; padding: 0 16px; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px; flex-wrap: wrap; }
+  .toolbar h2 { margin: 0; font-size: 18px; }
+  select { padding: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .card { background: var(--card); padding: 14px; border-radius: 4px; cursor: pointer; transition: box-shadow .15s; display: flex; flex-direction: column; gap: 6px; }
+  .card:hover { box-shadow: 0 3px 16px rgba(0,0,0,.12); }
+  .thumb { height: 140px; border-radius: 4px; display: grid; place-items: center; font-size: 44px; font-weight: 700; color: #fff; }
+  .name { font-size: 14px; line-height: 1.3; }
+  .brand { color: var(--muted); font-size: 12px; }
+  .rating { display: inline-block; background: var(--ok); color: #fff; font-size: 12px; padding: 1px 6px; border-radius: 3px; font-weight: 600; }
+  .price { font-weight: 700; font-size: 17px; }
+  .mrp { color: var(--muted); text-decoration: line-through; font-size: 13px; margin-left: 6px; }
+  .off { color: var(--ok); font-size: 13px; font-weight: 600; margin-left: 6px; }
+  .oos { color: var(--bad); font-weight: 600; font-size: 13px; }
+  .panel { background: var(--card); padding: 18px; border-radius: 4px; margin-bottom: 12px; }
+  .row { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: 0; }
+  .row .thumb { width: 80px; height: 80px; font-size: 26px; flex: none; }
+  .grow { flex: 1; min-width: 0; }
+  .qty { display: flex; align-items: center; gap: 6px; }
+  .qty button { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: #fff; }
+  .btn { border: 0; padding: 12px 22px; border-radius: 2px; font-weight: 600; color: #fff; }
+  .btn.cart { background: #ff9f00; } .btn.buy { background: #fb641b; } .btn.primary { background: var(--brand); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .link { background: none; border: 0; color: var(--brand); font-weight: 600; padding: 0; }
+  .summary div { display: flex; justify-content: space-between; padding: 6px 0; }
+  .summary .total { border-top: 1px dashed var(--line); font-weight: 700; font-size: 17px; margin-top: 6px; padding-top: 10px; }
+  .layout2 { display: grid; grid-template-columns: 1fr 320px; gap: 12px; align-items: start; }
+  @media (max-width: 800px) { .layout2 { grid-template-columns: 1fr; } .logo small { display: none; } .bar { gap: 8px; }
+    header .bar { flex-wrap: wrap; } header .logo { flex: 1; } header .search { order: 3; flex-basis: 100%; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); } .thumb { height: 110px; } }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; place-items: center; z-index: 50; padding: 16px; }
+  .modal-bg.open { display: grid; }
+  .modal { background: #fff; border-radius: 4px; max-width: 760px; width: 100%; max-height: 90vh; overflow: auto; padding: 22px; position: relative; }
+  .close { position: absolute; right: 12px; top: 8px; border: 0; background: none; font-size: 24px; color: var(--muted); }
+  .detail { display: grid; grid-template-columns: 260px 1fr; gap: 22px; }
+  .detail .thumb { height: 260px; font-size: 80px; }
+  @media (max-width: 640px) { .detail { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  input[type=text], input[type=email], input[type=password], textarea { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 2px; font: inherit; }
+  .error { color: var(--bad); font-size: 14px; min-height: 20px; margin-top: 8px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #323232; color: #fff; padding: 10px 18px; border-radius: 4px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
+  .toast.show { opacity: 1; }
+  .empty { text-align: center; padding: 50px 16px; color: var(--muted); }
+  .status { color: var(--ok); font-weight: 600; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo" id="home">ShopKart<small>Explore more</small></div>
+    <form class="search" id="searchForm">
+      <input id="searchBox" type="search" placeholder="Search for products, brands and more" aria-label="Search">
+      <button type="submit" aria-label="Search">&#128269;</button>
+    </form>
+    <button class="nav-btn login" id="loginBtn">Login</button>
+    <button class="nav-btn" id="ordersBtn" hidden>Orders</button>
+    <button class="nav-btn" id="cartBtn">Cart<span class="badge" id="cartCount">0</span></button>
+  </div>
+</header>
+<nav class="cats"><div class="bar" id="cats"></div></nav>
+<main id="view"></main>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const state = { token: sessionStorageGet('token'), user: null, category: '', q: '', sort: 'RELEVANCE', categories: [] };
+const COLORS = ['#5b7cfa', '#f06292', '#26a69a', '#ffa726', '#8d6e63', '#7e57c2', '#29b6f6'];
+
+function sessionStorageGet(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+function sessionStorageSet(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function rupees(paise) { return '₹' + (paise / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+function thumb(p) {
+  const color = COLORS[p.categoryId % COLORS.length];
+  return `<div class="thumb" style="background:${color}">${esc(p.brand.charAt(0))}</div>`;
+}
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+
+async function api(path, { method = 'GET', body } = {}) {
+  const headers = {};
+  if (state.token) headers['X-Auth-Token'] = state.token;
+  let payload;
+  if (body) { headers['Content-Type'] = 'application/x-www-form-urlencoded'; payload = new URLSearchParams(body).toString(); }
+  const res = await fetch(path, { method, headers, body: payload });
+  const data = await res.json();
+  if (!res.ok) { const err = new Error(data.error || 'Request failed'); err.status = res.status; throw err; }
+  return data;
+}
+
+function openModal(html) { document.getElementById('modal').innerHTML = '<button class="close" onclick="closeModal()">&times;</button>' + html; document.getElementById('modalBg').classList.add('open'); }
+function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
+document.getElementById('modalBg').addEventListener('click', e => { if (e.target.id === 'modalBg') closeModal(); });
+
+/* ---------- catalogue ---------- */
+async function loadCategories() {
+  state.categories = await api('/api/categories');
+  renderCategories();
+}
+function renderCategories() {
+  const all = [{ categoryId: '', name: 'All' }, ...state.categories];
+  document.getElementById('cats').innerHTML = all.map(c =>
+    `<button class="cat ${String(c.categoryId) === String(state.category) ? 'active' : ''}" data-cat="${c.categoryId}">${esc(c.name)}</button>`).join('');
+}
+document.getElementById('cats').addEventListener('click', e => {
+  const b = e.target.closest('.cat'); if (!b) return;
+  state.category = b.dataset.cat; state.q = ''; document.getElementById('searchBox').value = '';
+  renderCategories(); showProducts();
+});
+
+async function showProducts() {
+  const params = new URLSearchParams({ q: state.q, category: state.category, sort: state.sort });
+  const products = await api('/api/products?' + params);
+  const catName = state.categories.find(c => String(c.categoryId) === String(state.category))?.name;
+  const title = state.q ? `Results for "${esc(state.q)}"` : (catName || 'All products');
+  document.getElementById('view').innerHTML = `
+    <div class="toolbar"><h2>${title} <span class="brand">(${products.length} items)</span></h2>
+      <label style="margin:0">Sort by
+        <select id="sort">
+          ${[['RELEVANCE','Relevance'],['PRICE_ASC','Price: Low to High'],['PRICE_DESC','Price: High to Low'],['RATING','Customer Rating'],['DISCOUNT','Discount']]
+            .map(([v,l]) => `<option value="${v}" ${state.sort === v ? 'selected' : ''}>${l}</option>`).join('')}
+        </select></label></div>
+    ${products.length ? `<div class="grid">${products.map(productCard).join('')}</div>`
+                      : '<div class="panel empty">No products match your search.</div>'}`;
+  document.getElementById('sort').onchange = e => { state.sort = e.target.value; showProducts(); };
+}
+function productCard(p) {
+  return `<div class="card" onclick="showProduct(${p.productId})">
+    ${thumb(p)}
+    <div class="name">${esc(p.name)}</div>
+    <div class="brand">${esc(p.brand)}</div>
+    <div><span class="rating">${p.rating.toFixed(1)} ★</span></div>
+    <div><span class="price">${rupees(p.pricePaise)}</span><span class="mrp">${rupees(p.mrpPaise)}</span><span class="off">${p.discountPercent}% off</span></div>
+    ${p.stock === 0 ? '<div class="oos">Out of stock</div>' : p.stock < 10 ? `<div class="oos">Only ${p.stock} left</div>` : ''}
+  </div>`;
+}
+async function showProduct(id) {
+  const p = await api('/api/products/' + id);
+  openModal(`<div class="detail">
+    <div>${thumb(p)}</div>
+    <div>
+      <div class="brand">${esc(p.category)} · ${esc(p.brand)}</div>
+      <h2 style="margin:6px 0">${esc(p.name)}</h2>
+      <span class="rating">${p.rating.toFixed(1)} ★</span>
+      <p><span class="price" style="font-size:26px">${rupees(p.pricePaise)}</span><span class="mrp">${rupees(p.mrpPaise)}</span><span class="off">${p.discountPercent}% off</span></p>
+      <p>${esc(p.description)}</p>
+      <p class="${p.stock ? 'status' : 'oos'}">${p.stock ? 'In stock' : 'Out of stock'}</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn cart" ${p.stock ? '' : 'disabled'} onclick="addToCart(${p.productId}, false)">ADD TO CART</button>
+        <button class="btn buy" ${p.stock ? '' : 'disabled'} onclick="addToCart(${p.productId}, true)">BUY NOW</button>
+      </div>
+      <div class="error" id="detailErr"></div>
+    </div></div>`);
+}
+
+/* ---------- cart & checkout ---------- */
+async function addToCart(productId, goToCart) {
+  if (!state.token) { showLogin('Log in to add items to your cart'); return; }
+  try {
+    const cart = await api('/api/cart/add', { method: 'POST', body: { productId, quantity: 1 } });
+    setCartCount(cart.itemCount); closeModal();
+    goToCart ? showCart() : toast('Added to cart');
+  } catch (e) { document.getElementById('detailErr').textContent = e.message; }
+}
+function setCartCount(n) { document.getElementById('cartCount').textContent = n; }
+
+async function showCart() {
+  if (!state.token) { showLogin('Log in to see your cart'); return; }
+  const cart = await api('/api/cart');
+  setCartCount(cart.itemCount);
+  const view = document.getElementById('view');
+  if (!cart.items.length) { view.innerHTML = '<div class="panel empty"><h3>Your cart is empty</h3><button class="btn primary" onclick="goHome()">Shop now</button></div>'; return; }
+  view.innerHTML = `<div class="layout2">
+    <div class="panel">
+      <h3 style="margin-top:0">My Cart (${cart.itemCount})</h3>
+      ${cart.items.map(i => `<div class="row">
+        ${thumb(i.product)}
+        <div class="grow"><div class="name">${esc(i.product.name)}</div><div class="brand">${esc(i.product.brand)}</div>
+          <div><span class="price">${rupees(i.product.pricePaise)}</span><span class="mrp">${rupees(i.product.mrpPaise)}</span></div>
+          <div class="qty" style="margin-top:6px">
+            <button onclick="updateQty(${i.product.productId}, ${i.quantity - 1})">−</button><b>${i.quantity}</b>
+            <button onclick="updateQty(${i.product.productId}, ${i.quantity + 1})">+</button>
+            <button class="link" style="margin-left:14px" onclick="updateQty(${i.product.productId}, 0)">REMOVE</button>
+          </div></div>
+        <div class="price">${rupees(i.lineTotalPaise)}</div></div>`).join('')}
+      <div class="error" id="cartErr"></div>
+    </div>
+    <div class="panel summary">
+      <h3 style="margin-top:0;color:var(--muted);font-size:15px">PRICE DETAILS</h3>
+      <div><span>Price (${cart.itemCount} items)</span><span>${rupees(cart.totalMrpPaise)}</span></div>
+      <div><span>Discount</span><span class="off">− ${rupees(cart.totalMrpPaise - cart.totalPaise)}</span></div>
+      <div><span>Delivery</span><span class="off">FREE</span></div>
+      <div class="total"><span>Total Amount</span><span>${rupees(cart.totalPaise)}</span></div>
+      <label for="addr">Delivery address</label>
+      <textarea id="addr" rows="3" placeholder="House no, street, city, PIN code"></textarea>
+      <button class="btn buy" style="width:100%;margin-top:12px" onclick="checkout()">PLACE ORDER</button>
+      <div class="error" id="checkoutErr"></div>
+    </div></div>`;
+}
+async function updateQty(productId, quantity) {
+  try { await api('/api/cart/update', { method: 'POST', body: { productId, quantity } }); showCart(); }
+  catch (e) { document.getElementById('cartErr').textContent = e.message; }
+}
+async function checkout() {
+  try {
+    const order = await api('/api/checkout', { method: 'POST', body: { address: document.getElementById('addr').value } });
+    setCartCount(0);
+    document.getElementById('view').innerHTML = `<div class="panel empty"><h2 style="color:var(--ok)">Order placed!</h2>
+      <p>Order #${order.orderId} · ${rupees(order.totalPaise)}</p><button class="btn primary" onclick="showOrders()">View my orders</button></div>`;
+  } catch (e) { document.getElementById('checkoutErr').textContent = e.message; }
+}
+async function showOrders() {
+  const orders = await api('/api/orders');
+  document.getElementById('view').innerHTML = `<h2>My Orders</h2>` + (orders.length ? orders.map(o => `
+    <div class="panel"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <b>Order #${o.orderId}</b><span class="status">${esc(o.status)}</span><span class="brand">${esc(o.createdAt.slice(0, 16))}</span><b>${rupees(o.totalPaise)}</b></div>
+      ${o.items.map(i => `<div class="row"><div class="grow">${esc(i.productName)}</div><div>${i.quantity} × ${rupees(i.unitPricePaise)}</div></div>`).join('')}
+      <div class="brand">Deliver to: ${esc(o.shippingAddress)}</div></div>`).join('')
+    : '<div class="panel empty">You have not placed any orders yet.</div>');
+}
+
+/* ---------- auth ---------- */
+function showLogin(reason, register = false) {
+  openModal(`<h2 style="margin-top:0">${register ? 'Create your account' : 'Login'}</h2>
+    ${reason ? `<p class="brand">${esc(reason)}</p>` : ''}
+    <form id="authForm">
+      ${register ? '<label>Full name</label><input type="text" name="name" required>' : ''}
+      <label>Email</label><input type="email" name="email" required>
+      <label>Password ${register ? '(min 8 characters)' : ''}</label><input type="password" name="password" required>
+      <button class="btn buy" style="width:100%;margin-top:16px">${register ? 'CONTINUE' : 'LOGIN'}</button>
+      <div class="error" id="authErr"></div>
+    </form>
+    <p style="text-align:center"><button class="link" onclick="showLogin('', ${!register})">
+      ${register ? 'Existing user? Log in' : 'New to ShopKart? Create an account'}</button></p>`);
+  document.getElementById('authForm').onsubmit = async e => {
+    e.preventDefault();
+    try {
+      const res = await api(register ? '/api/register' : '/api/login', { method: 'POST', body: Object.fromEntries(new FormData(e.target)) });
+      state.token = res.token; state.user = res.user; sessionStorageSet('token', res.token);
+      closeModal(); renderAuth(); refreshCartCount(); toast('Welcome, ' + res.user.fullName);
+    } catch (err) { document.getElementById('authErr').textContent = err.message; }
+  };
+}
+async function logout() {
+  await api('/api/logout', { method: 'POST', body: {} }).catch(() => {});
+  state.token = null; state.user = null; sessionStorageSet('token', null); renderAuth(); setCartCount(0); goHome();
+}
+function renderAuth() {
+  const b = document.getElementById('loginBtn');
+  if (state.user) { b.textContent = state.user.fullName.split(' ')[0] + ' · Logout'; b.classList.remove('login'); b.onclick = logout; }
+  else { b.textContent = 'Login'; b.classList.add('login'); b.onclick = () => showLogin(''); }
+  document.getElementById('ordersBtn').hidden = !state.user;
+}
+async function refreshCartCount() { if (state.token) { const c = await api('/api/cart'); setCartCount(c.itemCount); } }
+
+function goHome() { state.q = ''; state.category = ''; document.getElementById('searchBox').value = ''; renderCategories(); showProducts(); }
+document.getElementById('home').onclick = goHome;
+document.getElementById('cartBtn').onclick = showCart;
+document.getElementById('ordersBtn').onclick = showOrders;
+document.getElementById('searchForm').onsubmit = e => { e.preventDefault(); state.q = document.getElementById('searchBox').value.trim(); state.category = ''; renderCategories(); showProducts(); };
+
+(async function init() {
+  if (state.token) {
+    try { state.user = await api('/api/me'); refreshCartCount(); } catch (e) { state.token = null; sessionStorageSet('token', null); }
+  }
+  renderAuth();
+  await loadCategories();
+  showProducts();
+})();
+</script>
+</body>
+</html>
