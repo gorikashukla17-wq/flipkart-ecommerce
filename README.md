@@ -1,11 +1,24 @@
 # ShopKart: a Flipkart-inspired E-Commerce Platform
 
+![Java 17](https://img.shields.io/badge/Java-17-orange) ![MySQL 8](https://img.shields.io/badge/MySQL-8-blue) ![Tests](https://img.shields.io/badge/tests-19%20passing-brightgreen) ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
 A full e-commerce application with product browsing, search, cart and order flows. The UI is
 a custom single-page front end; the back end is **plain Java with a JDBC data-access layer**
 over a **normalised MySQL schema**. There is no framework, so every layer is hand-written and
 visible.
 
 **Stack:** Java 17 · JDBC · MySQL 8 (Apache Derby embedded for demo/tests) · JDK `HttpServer` · HTML/CSS/JS · JUnit 4 · Maven
+
+## Highlights
+
+- Complete shopping flow: **browse, search, cart, checkout, order history**, with a responsive front end.
+- **Checkout runs in one database transaction**, so a failed line rolls back the whole order.
+- **Secure by design:** salted PBKDF2 passwords, parameterised SQL everywhere, and an atomic stock check that stops two buyers from getting the last unit.
+- Hand-written layers (HTTP → services → DAOs → JDBC) with **no framework**.
+
+## Contents
+
+[Features](#features) · [Architecture](#architecture) · [Database design](#database-design) · [Security](#security) · [Running it](#running-it) · [API](#api) · [Project layout](#project-layout) · [Author](#author) · [License](#license)
 
 ![Home](docs/screenshots/shop_home.png)
 
@@ -132,3 +145,11 @@ src/test/java/com/shopkart/
 
 *This is a learning project. "Flipkart-inspired" describes the feature set only; the ShopKart
 name, brands and catalogue are fictional.*
+
+## Author
+
+**Gorika Shukla** · GitHub [@gorikashukla17-wq](https://github.com/gorikashukla17-wq)
+
+## License
+
+Released under the [MIT License](LICENSE).
